@@ -40,13 +40,25 @@ df.columns = ["Freq","limit_cen","noise_un","mis_un","QL_un","toal_un","Nan"]
 print(df.head())
 
 
-hein_limit_freq = df["Freq"].values * 1e9
+hein_limit_freq = df["Freq"     ].values * 1e9
 center_limits   = df["limit_cen"].values
-
-to_un   = df["toal_un"].values
+to_un           = df["toal_un"  ].values
 
 upper__limits   = center_limits + sqrt(  to_un**2  )
 lower__limits   = center_limits - sqrt(  to_un**2  )
+
+######################################################################### remove two non-axion range
+
+for i in range(len(hein_limit_freq)):
+    if (4.747300e9<=hein_limit_freq[i] and  hein_limit_freq[i]<=4.747380e9):
+        center_limits[i]   = None # np.nan
+        upper__limits[i]   = None # np.nan
+        lower__limits[i]   = None # np.nan
+    if (4.710170e9<=hein_limit_freq[i] and  hein_limit_freq[i]<=4.710190e9):
+        center_limits[i]   = None # np.nan
+        upper__limits[i]   = None # np.nan
+        lower__limits[i]   = None # np.nan
+
 
 ##########################################################################  plot
 print(f"[*] Creating figures")
@@ -209,7 +221,7 @@ else:
                 flag = not flag
         inset_axes.fill_between(hein_limit_freq * 1e-9,upper__limits_g_gamma*1e13,lower__limits_g_gamma*1e13,color="blue")
         ploy_line = inset_axes.plot(hein_limit_freq * 1e-9,center_limits_g_gamma,"r",linewidth=1)
-        inset_axes.vlines(x=hein_limit_freq[0]*1e-9,ymax=200,ymin=center_limits_g_gamma[0],color="r")
+        inset_axes.vlines(x=hein_limit_freq[0 ]*1e-9,ymax=200,ymin=center_limits_g_gamma[0],color="r")
         inset_axes.vlines(x=hein_limit_freq[-1]*1e-9,ymax=200,ymin=center_limits_g_gamma[-1],color="r")
 
 
