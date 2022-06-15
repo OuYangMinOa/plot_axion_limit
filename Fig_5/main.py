@@ -27,39 +27,6 @@ def create(path):
         print(e)
         return False
 
-def expected_axion_power(freq_ ,beta , Q_=15_000 ,B_=8 , T_=3, g_gamma=10):
-    output = []
-    for each_f in freq_:
-        g      = Glimit()
-        g.B    = B_
-        g.big_A= 77.6e6
-        g.Q    = Q_
-        g.T    = T_
-        g.f    = each_f
-        g.beta = beta
-        g.calculate()
-        output.append(g.shift *  ( g.ma * g.alpha / pi / (g.big_A**2) * g_gamma) **2)
-    return array(output) 
-
-
-df        = pd.read_table("fitted_param_posi.txt",sep=" ",header=None)
-f_n , a_n = load(r"First_adding_noise.npy",allow_pickle=True)
-freq = df.iloc[:,2].values * 1e9
-Q01  = df.iloc[:,3].values
-Q2   = df.iloc[:,4].values
-DEG  = df.iloc[:,6].values
-beta = df.iloc[:,3].values / df.iloc[:,4].values
-
-get_b = lambda x:interpolate.interp1d(RESONANCE_FREQ_ARR, ALL_DATAS_beta, fill_value="extrapolate",assume_sorted = False)(x)
-get_Q = lambda x:interpolate.interp1d(freq, Q01 / (1+get_b(x)), fill_value="extrapolate",assume_sorted = False)(x)
-get_t = lambda x:interpolate.interp1d(f_n, a_n,fill_value="extrapolate", assume_sorted = False)(x)
-
-dr_hien = pd.read_table("fitted_param_posi_faxion.txt",delimiter=" ",header=None)
-RESONANCE_FREQ_ARR = dr_hien.iloc[:,2].values * 1e9
-ALL_DATAS_beta = (dr_hien.iloc[:,3] / dr_hien.iloc[:,4]).values
-ALL_DATAS_Q   = (1 / (1 / dr_hien.iloc[:,3] + 1/ dr_hien.iloc[:,4])).values.reshape(-1,1)
-
-
 ALL_DATAS_FREQ = []
 ALL_DATAS_SPEC = []
 ALL_DATAS_NA   = []
@@ -130,16 +97,12 @@ for spec_num in range(ALL_DATAS_FREQ.shape[0]):
     ax.plot(1e-9 * ALL_DATAS_FREQ[spec_num],this_spec_for_stack - spec_num*6.2e-22,"-",
             label= f"step = {spec_num+1}" )#if (abs(spec_num-ALL_DATAS_FREQ.shape[0]) <10) else None)
 
-#                 ax.plot(1e-9 * ALL_DATAS_FREQ[spec_num],this_spec_for_stack + spec_num*8e-22)
-
-#     savetxt(f"D:\\AXion\\CD102\\Temp_IQ\\step {spec_num+1}.txt",column_stack([ALL_DATAS_FREQ[spec_num],ALL_DATAS_SPEC[spec_num]]),delimiter=" ", fmt="%s %s")
-#     savetxt(f"Y:\Analysis\Spectrum_wo_sg\\step {spec_num+1}.txt",column_stack([ALL_DATAS_FREQ[spec_num],ALL_DATAS_SPEC[spec_num]]),delimiter=" ", fmt="%s %s")
-# legend(ncol=3)
 legend(ncol=2,fontsize=9,loc="upper left")
 ax.get_yaxis().set_visible(False)
 grid()
 xlabel("Frequency [GHz]")
 tight_layout()
+savefig("FIG_5.png")
 show()
 
 
