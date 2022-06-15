@@ -78,35 +78,12 @@ raw_floders  = os.listdir(f"faxion_1120_raw/")
 
 if ("cavity 0" in raw_floders):
     raw_floders.remove("cavity 0")
-print(raw_floders[-1])
+
 for index in range(len(raw_floders)):
     cavity_num = index+1
     print(cavity_num,end=" ")
     saved_file = f"server_processed_faxion_1120/server_window{window}_order{order}_do_sg_{do_Sg}/cavity_{cavity_num}.npy"
-    create(f"server_processed_faxion_1120/server_window{window}_order{order}_do_sg_{do_Sg}/")
-    if (not os.path.isfile(saved_file) or cavity_num==len(raw_floders)):
-        print(f"processing cavity {cavity_num}")
-        if (len(os.listdir(f"faxion_1120_raw/cavity {cavity_num}"))==0):
-            break
-        this_Q, this_beta, fr = get_Q_distribution(f"Y:/Faxion/cavity {cavity_num}/")
-        temp_freq, temp_spec, temp_av, temp_mean,temp_date, G_arr = read_floder_npy_average(f"faxion_1120_raw/cavity {cavity_num}",
-                                                                                     order = order,
-                                                                                     window = window,
-                                                                                    do_sg_filter=do_Sg)
-        if (cavity_num!=len(raw_floders)):
-            np.save(saved_file,
-                   (array(temp_freq),
-                    array(temp_spec),
-                    array(temp_av),
-                    array(temp_mean),
-                    array(temp_date),
-                    array(G_arr),
-                    this_Q,
-                    this_beta,
-                    fr
-                   ))
-    else:
-        temp_freq, temp_spec, temp_av, temp_mean,temp_date, G_arr, this_Q, this_beta, fr = load(
+    temp_freq, temp_spec, temp_av, temp_mean,temp_date, G_arr, this_Q, this_beta, fr = load(
             saved_file,
             allow_pickle=True)
     ALL_DATAS_FREQ.append(temp_freq)
