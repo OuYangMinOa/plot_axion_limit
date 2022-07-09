@@ -94,11 +94,11 @@ for i in range(len(center_limits)):
     if (center_limits[i] != center_limits[i]):
         if (flag):
             ax.vlines(x=hein_limit_freq[i]*1e-9,ymax=20,ymin=center_limits[i-1]*1e14,color="r")
-            print(center_limits[i-1])
+            # print("[*]",center_limits[i-1])
             flag = not flag 
     elif(center_limits[i] == center_limits[i] and  not flag):
         ax.vlines(x=hein_limit_freq[i]*1e-9,ymax=20,ymin=center_limits[i+1]*1e14,color="r")
-        print(center_limits[i+1])
+        # print(center_limits[i+1])
         flag = not flag
 
 
@@ -161,7 +161,7 @@ mean_center = mean(center_limits_g_gamma[logical_not(isnan(center_limits_g_gamma
 ##########################################################################  plot others experiment
 
 if (SHOW_OTHER_EXPERIMENT):
-    print("[*] others experiement mean g_gamma")
+    print("[*] others experiement \t\t\t\t G_gamma / G_ksvz\n")
     ADMX_num = 40
     WANT = ["HAYSTAC","CAPP","ADMX"]
 
