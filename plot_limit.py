@@ -18,15 +18,16 @@ OUTPUT_FILE_NAME        = "limit.png"
 SHOW_OTHER_EXPERIMENT   = 1 #  1 : show others experiment data  0 : don't show
 PLOT_SQUARE             = 1 #  1 : plot TASEH limit with suare  0 : don't do that
 LOG_PLOT                = 1 #  1 : plot with log and add {admx sidecar}, {UF} and {RBF}. 0 :plot with linear
-
+CAST                    = 1 #  1 : plot CAST
 
 color_map ={
     "ADMX"   :"#7FF547",
     "HAYSTAC":"#FFDC4A",
     "CAPP"   :"#7157E8",
     "UF"     :"#9B6669",
-    "RBF"    :"#534D6D"
- }
+    "RBF"    :"#534D6D",
+    "CAST"   :"#9E7068"
+}
 
 ########################################################################## functions
 def ma_to_freq(ma):   # eat ev output GHz
@@ -70,7 +71,7 @@ print(f"[*] Creating figures")
 matplotlib.rcParams.update({'font.size': 14})
 g = Glimit()
 g.big_A= 77.6e6
-
+upper_bound = 1e30
 # create plot
 fig        = figure(figsize=(8,6))
 ax         = fig.add_subplot(111)
@@ -168,7 +169,8 @@ if (SHOW_OTHER_EXPERIMENT):
     if (LOG_PLOT):
         WANT.append("RBF")
         WANT.append("UF")
-        
+    if (CAST):
+        WANT.append("CAST")
 
     for each_limit_file in glob(f"{INPUT_EXPERIMENT_FLODER}/*.csv"):
         flag = 0
@@ -186,42 +188,84 @@ if (SHOW_OTHER_EXPERIMENT):
         df = pd.read_csv(each_limit_file,index_col=0)
         limit  = array(df["G_ap[GeV^-1]"].values,dtype=float)
         this_x = ma_to_freq(df["m_a [eV]"].values)
-        this_g_gamma = limit*  (pi * g.big_A * g.big_A) / (g.h_bar* 2*pi*this_x * g.alpha*1e18) / 0.97
+        this_g_gamma = limit*  (pi * g.big_A * g.big_A) / (g.h_bar* 2*pi*this_x * g.alpha*1e18)/ 0.97
         
         if ("RBF" in each_limit_file):
             sort_index = argsort(this_x)
             this_x = this_x[sort_index]
 
+        if ("CAST" in each_limit_file):
+            new_x       = linspace(this_x[0],this_x[3],1000)
+            this_interp = interp(new_x , this_x[:5], limit[:5])
+            this_g_gamma = this_interp*  (pi * g.big_A * g.big_A) / (g.h_bar*2*pi*new_x * g.alpha*1e18)/0.97
+            this_x       = new_x
+
         print(f"\t{os.path.basename(each_limit_file):30} : {mean(this_g_gamma)}")
 
-        inset_axes.fill_between(this_x, this_g_gamma,10000,alpha=.5,color=this_color,label=os.path.basename(each_limit_file)[0:-4])
+        inset_axes.fill_between(this_x, this_g_gamma,upper_bound,alpha=.5,color=this_color,label=os.path.basename(each_limit_file)[0:-4])
 
     if (PLOT_SQUARE):
-        inset_axes.fill_between(hein_limit_freq * 1e-9,mean_center+center_limits_g_gamma*0,10000,color="r")
+        inset_axes.fill_between(hein_limit_freq * 1e-9,mean_center+center_limits_g_gamma*0,upper_bound,color="r")
     else:
-        inset_axes.fill_between(hein_limit_freq * 1e-9,center_limits_g_gamma,10000,color="r")
+        inset_axes.fill_between(hein_limit_freq * 1e-9,center_limits_g_gamma,upper_bound,color="r")
+
 
     if (LOG_PLOT):
-        inset_axes.set_yscale("log")
-        inset_axes.set_ylim(0.05,500)
-        inset_axes.set_xlim(0.01,7)
-        inset_axes.text(1.4,2,"CAPP",size=9)
-        inset_axes.text(2.35,2.1,"CAPP",size=9)
-        inset_axes.text(3.1,5,"CAPP",size=9)
-        inset_axes.text(3.7,2.2,"HAYSTAC",size=9)
-        inset_axes.text(5.4,2.2,"HAYSTAC",size=9)
-        inset_axes.text(0.75,8,"ADMX",size=9,ha="center")
-        inset_axes.text(5.4,100,"ADMX sidecar",size=9,ha="center")
-        if (PLOT_SQUARE):
-                inset_axes.text(4.3,6,"TASEH CD102",size=9,color="r")
+        if (CAST):
+            inset_axes.set_yscale("log")
+            inset_axes.set_ylim(0.05,1e6)
+            inset_axes.set_xlim(0.01,7)
+            inset_axes.text(1.6,5,"CAPP",size=9)
+            inset_axes.text(2.35,5.1,"CAPP",size=9)
+            inset_axes.text(3.1,7,"CAPP",size=9)
+            inset_axes.text(3.7,5.2,"HAYSTAC",size=9)
+            inset_axes.text(5.4,5.2,"HAYSTAC",size=9)
+            inset_axes.text(0.75,10,"ADMX",size=9,ha="center")
+            inset_axes.text(5.4,100,"ADMX sidecar",size=9,ha="center")
+            inset_axes.text(3.45,1000,"TASEH CD102",size=9,color="r")
+            inset_axes.text(4.57,2.5,"CAPP",size=9)
+            inset_axes.text(1.4,150,"UF",size=9,ha="center")
+            inset_axes.text(2.2,150,"RBF",size=9,ha="center")
+            inset_axes.text(2,0.5e5,"CAST",size=12,ha="center")
+            inset_axes.text(3.5,1.4,"KSVZ",size=7,c="b",ha="center")
+            inset_axes.text(3.5,0.12,"DFSZ",size=7,c="r",ha="center")
         else:
-            inset_axes.text(4.3,4,"TASEH CD102",size=9,color="r")
-        inset_axes.text(4.57,1.5,"CAPP",size=9)
-        inset_axes.text(1.4,80,"UF",size=9,ha="center")
-        inset_axes.text(2.2,80,"RBF",size=9,ha="center")
-        inset_axes.text(4.6,0.47,"KSVZ",size=9,c="b",ha="center")
-        inset_axes.text(4.6,0.17,"DFSZ",size=9,c="r",ha="center")
+            inset_axes.set_yscale("log")
+            inset_axes.set_ylim(0.05,500)
+            inset_axes.set_xlim(0.01,7)
+            inset_axes.text(1.4,2,"CAPP",size=9)
+            inset_axes.text(2.35,2.1,"CAPP",size=9)
+            inset_axes.text(3.1,5,"CAPP",size=9)
+            inset_axes.text(3.7,2.2,"HAYSTAC",size=9)
+            inset_axes.text(5.4,2.2,"HAYSTAC",size=9)
+            inset_axes.text(0.75,8,"ADMX",size=9,ha="center")
+            inset_axes.text(5.4,100,"ADMX sidecar",size=9,ha="center")
+            if (PLOT_SQUARE):
+                    inset_axes.text(4.3,6,"TASEH CD102",size=9,color="r")
+            else:
+                inset_axes.text(4.3,4,"TASEH CD102",size=9,color="r")
+            inset_axes.text(4.57,1.5,"CAPP",size=9)
+            inset_axes.text(1.4,80,"UF",size=9,ha="center")
+            inset_axes.text(2.2,80,"RBF",size=9,ha="center")
+            inset_axes.text(4.6,0.47,"KSVZ",size=9,c="b",ha="center")
+            inset_axes.text(4.6,0.17,"DFSZ",size=9,c="r",ha="center")
 
+    elif (CAST):
+        inset_axes.set_yscale("log")
+        inset_axes.set_ylim(0.05,1e6)
+        inset_axes.set_xlim(0.01,7)
+        inset_axes.text(1.6,5,"CAPP",size=9)
+        inset_axes.text(2.35,5.1,"CAPP",size=9)
+        inset_axes.text(3.1,7,"CAPP",size=9)
+        inset_axes.text(3.7,5.2,"HAYSTAC",size=9)
+        inset_axes.text(5.4,5.2,"HAYSTAC",size=9)
+        inset_axes.text(0.75,10,"ADMX",size=9,ha="center")
+        inset_axes.text(5.4,100,"ADMX sidecar",size=9,ha="center")
+        inset_axes.text(3.45,1000,"TASEH CD102",size=9,color="r")
+        inset_axes.text(4.57,2.5,"CAPP",size=9)
+        inset_axes.text(2,0.5e5,"CAST",size=12,ha="center")
+        inset_axes.text(3.5,1.4,"KSVZ",size=7,c="b",ha="center")
+        inset_axes.text(3.5,0.12,"DFSZ",size=7,c="r",ha="center")
     else:
         inset_axes.text(1.4,2.4,"CAPP",size=9)
         inset_axes.text(2.35,2.5,"CAPP",size=9)
@@ -242,7 +286,7 @@ if (SHOW_OTHER_EXPERIMENT):
             inset_axes.text(4.3,4.2,"TASEH CD102",size=9,color="r")
 else:
     if (PLOT_SQUARE):
-        inset_axes.fill_between(hein_limit_freq * 1e-9,mean_center+center_limits_g_gamma*0,10000,color="r")
+        inset_axes.fill_between(hein_limit_freq * 1e-9,mean_center+center_limits_g_gamma*0,upper_bound,color="r")
         inset_axes.text(4.75,7.5,"TASEH CD102",size=12,color="black",ha='center')
     else:
 
@@ -258,8 +302,8 @@ else:
                 flag = not flag
         inset_axes.fill_between(hein_limit_freq * 1e-9,upper__limits_g_gamma*1e13,lower__limits_g_gamma*1e13,color="blue")
         ploy_line = inset_axes.plot(hein_limit_freq * 1e-9,center_limits_g_gamma,"r",linewidth=1)
-        inset_axes.vlines(x=hein_limit_freq[0 ]*1e-9,ymax=10000,ymin=center_limits_g_gamma[0],color="r")
-        inset_axes.vlines(x=hein_limit_freq[-1]*1e-9,ymax=10000,ymin=center_limits_g_gamma[-1],color="r")
+        inset_axes.vlines(x=hein_limit_freq[0 ]*1e-9,ymax=upper_bound,ymin=center_limits_g_gamma[0],color="r")
+        inset_axes.vlines(x=hein_limit_freq[-1]*1e-9,ymax=upper_bound,ymin=center_limits_g_gamma[-1],color="r")
 
 
 savefig(OUTPUT_FILE_NAME,dpi=300)
