@@ -15,8 +15,8 @@ INPUT_EXPERIMENT_FLODER = "others_experiment"
 INPUT_limit_PATH        = "gayy_unc_updateFF_06July.txt"  #"gayy_unc_updateNoise_C.txt"
 OUTPUT_FILE_NAME        = "limit.png"
 
-SHOW_OTHER_EXPERIMENT   = 1 #  1 : show others experiment data  0 : don't show
-PLOT_SQUARE             = 1 #  1 : plot TASEH limit with suare  0 : don't do that
+SHOW_OTHER_EXPERIMENT   = 0 #  1 : show others experiment data  0 : don't show
+PLOT_SQUARE             = 0 #  1 : plot TASEH limit with square  0 : don't do that
 LOG_PLOT                = 1 #  1 : plot with log and add {admx sidecar}, {UF} and {RBF}. 0 :plot with linear
 CAST                    = 1 #  1 : plot CAST
 
@@ -71,7 +71,7 @@ print(f"[*] Creating figures")
 matplotlib.rcParams.update({'font.size': 14})
 g = Glimit()
 g.big_A= 77.6e6
-upper_bound = 1e30
+upper_bound = 1e10
 # create plot
 fig        = figure(figsize=(8,6))
 ax         = fig.add_subplot(111)
@@ -292,7 +292,7 @@ else:
     else:
 
         # plot inset removed region
-
+        inset_axes.fill_between(hein_limit_freq * 1e-9,upper__limits_g_gamma*1e13,lower__limits_g_gamma*1e13,color="blue")
         for i in range(len(center_limits_g_gamma)):
             if (center_limits_g_gamma[i] != center_limits_g_gamma[i]):
                 if (flag):
@@ -301,13 +301,17 @@ else:
             elif(center_limits[i] == center_limits[i] and  not flag):
                 inset_axes.vlines(x=hein_limit_freq[i]*1e-9,ymax=200,ymin=center_limits_g_gamma[i+1],color="r")
                 flag = not flag
-        inset_axes.fill_between(hein_limit_freq * 1e-9,upper__limits_g_gamma*1e13,lower__limits_g_gamma*1e13,color="blue")
-        ploy_line = inset_axes.plot(hein_limit_freq * 1e-9,center_limits_g_gamma,"r",linewidth=1)
-        inset_axes.vlines(x=hein_limit_freq[0 ]*1e-9,ymax=upper_bound,ymin=center_limits_g_gamma[0],color="r")
+        
+        inset_axes.plot(hein_limit_freq * 1e-9,center_limits_g_gamma,"r",linewidth=1)
+        inset_axes.vlines(x=hein_limit_freq[0]*1e-9,ymax=upper_bound,ymin=center_limits_g_gamma[0],color="r")
         inset_axes.vlines(x=hein_limit_freq[-1]*1e-9,ymax=upper_bound,ymin=center_limits_g_gamma[-1],color="r")
 
+    inset_axes.xaxis.set_major_locator(MultipleLocator(0.02))
+    inset_axes.xaxis.set_minor_locator(MultipleLocator(0.004))
+    inset_axes.text(4.75, 1.3,"KSVZ",size=9,c="b",ha="center")
+    inset_axes.text(4.75,-1.1,"DFSZ",size=9,c="r",ha="center")
 
-savefig(OUTPUT_FILE_NAME,dpi=300)
+savefig(OUTPUT_FILE_NAME,dpi=600)
 
 print(f"[*] Saved in {OUTPUT_FILE_NAME}")
 
