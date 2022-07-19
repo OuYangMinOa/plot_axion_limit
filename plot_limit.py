@@ -15,7 +15,7 @@ INPUT_EXPERIMENT_FLODER = "others_experiment"
 INPUT_limit_PATH        = "gayy_unc_updateFF_06July.txt"  #"gayy_unc_updateNoise_C.txt"
 OUTPUT_FILE_NAME        = "limit.png"
 
-SHOW_OTHER_EXPERIMENT   = 0 #  1 : show others experiment data  0 : don't show
+SHOW_OTHER_EXPERIMENT   = 1 #  1 : show others experiment data  0 : don't show
 PLOT_SQUARE             = 0 #  1 : plot TASEH limit with square  0 : don't do that
 LOG_PLOT                = 1 #  1 : plot with log and add {admx sidecar}, {UF} and {RBF}. 0 :plot with linear
 CAST                    = 1 #  1 : plot CAST
@@ -196,7 +196,7 @@ if (SHOW_OTHER_EXPERIMENT):
 
         if ("CAST" in each_limit_file):
             new_x       = linspace(this_x[0],this_x[3],1000)
-            this_interp = interp(new_x , this_x[:5], limit[:5])
+            this_interp = interp(new_x , this_x[:5], limit[:5])  #
             this_g_gamma = this_interp*  (pi * g.big_A * g.big_A) / (g.h_bar*2*pi*new_x * g.alpha*1e18)/0.97
             this_x       = new_x
 
